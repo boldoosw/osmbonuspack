@@ -1,6 +1,7 @@
 package com.example.osmbonuspacktuto;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +12,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -63,6 +69,7 @@ import org.osmdroid.views.overlay.infowindow.MarkerInfoWindow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -72,10 +79,11 @@ import java.util.Map;
  * @author M.Kergall
  * @see <a href="https://github.com/MKergall/osmbonuspack">OSMBonusPack on GitHub</a>
  */
-public class MainActivity extends Activity implements MapEventsReceiver, MapView.OnFirstLayoutListener {
+public class MainActivity extends Activity implements MapEventsReceiver, MapView.OnFirstLayoutListener , LocationListener {
 
 	MapView map;
 	KmlDocument mKmlDocument;
+	LocationManager locationManager;
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
 
@@ -244,6 +252,51 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		map.getOverlays().add(0, mapEventsOverlay); //inserted at the "bottom" of all overlays
 
 		checkPermissions();
+	}
+
+	@SuppressLint("MissingPermission")
+	private void getLocation() {
+
+		try {
+			locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0, 0, this);
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+
+
+	@Override
+	public void onLocationChanged(Location location) {
+		Toast.makeText(this, ""+location.getLatitude()+","+location.getLongitude(), Toast.LENGTH_SHORT).show();
+		try {
+			Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+			List<Address> addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(),1);
+			String address = addresses.get(0).getAddressLine(0);
+
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+
 	}
 
 	//--- Stuff for setting the mapview on a box at startup:
