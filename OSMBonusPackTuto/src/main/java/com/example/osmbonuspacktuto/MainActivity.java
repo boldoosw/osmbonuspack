@@ -91,7 +91,7 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		setContentView(R.layout.main);
 		map = (MapView) findViewById(R.id.map);
 		map.setMultiTouchControls(true);
-		GeoPoint startPoint = new GeoPoint(48.13, -1.63);
+		GeoPoint startPoint = new GeoPoint(47.9157397, 106.9189875);
 		IMapController mapController = map.getController();
 		mapController.setZoom(10.0);
 		mapController.setCenter(startPoint);
@@ -101,9 +101,9 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		startMarker.setPosition(startPoint);
 		startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 		startMarker.setTitle("Start point");
-		//startMarker.setIcon(getResources().getDrawable(R.drawable.marker_kml_point).mutate());
-		//startMarker.setImage(getResources().getDrawable(R.drawable.ic_launcher));
-		//startMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bonuspack_bubble_black, map));
+		startMarker.setIcon(getResources().getDrawable(R.drawable.marker_kml_point).mutate());
+		startMarker.setImage(getResources().getDrawable(R.drawable.ic_launcher));
+		startMarker.setInfoWindow(new MarkerInfoWindow(R.layout.bonuspack_bubble_black, map));
 		startMarker.setDraggable(true);
 		startMarker.setOnMarkerDragListener(new OnMarkerDragListenerDrawer());
 		map.getOverlays().add(startMarker);
@@ -114,7 +114,7 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		//((OSRMRoadManager)roadManager).setMean(OSRMRoadManager.MEAN_BY_BIKE);
 		ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
 		waypoints.add(startPoint);
-		GeoPoint endPoint = new GeoPoint(48.4, -1.9);
+		GeoPoint endPoint = new GeoPoint(47.9257397, 106.9119875);
 		waypoints.add(endPoint);
 		Road road = roadManager.getRoad(waypoints);
 		if (road.mStatus != Road.STATUS_OK)
@@ -123,121 +123,121 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
 		map.getOverlays().add(roadOverlay);
 
-		//3. Showing the Route steps on the map
-		FolderOverlay roadMarkers = new FolderOverlay();
-		map.getOverlays().add(roadMarkers);
-		Drawable nodeIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_node, null);
-		for (int i = 0; i < road.mNodes.size(); i++) {
-			RoadNode node = road.mNodes.get(i);
-			Marker nodeMarker = new Marker(map);
-			nodeMarker.setPosition(node.mLocation);
-			nodeMarker.setIcon(nodeIcon);
-			nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
-
-			//4. Filling the bubbles
-			nodeMarker.setTitle("Step " + i);
-			nodeMarker.setSnippet(node.mInstructions);
-			nodeMarker.setSubDescription(Road.getLengthDurationText(this, node.mLength, node.mDuration));
-			Drawable iconContinue = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_continue, null);
-			nodeMarker.setImage(iconContinue);
-			//4. end
-
-			roadMarkers.add(nodeMarker);
-		}
-
-		//5. OpenStreetMap POIs with Nominatim
-		NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
-		ArrayList<POI> pois = poiProvider.getPOICloseTo(startPoint, "cinema", 50, 0.1);
-		//or : ArrayList<POI> pois = poiProvider.getPOIAlong(road.getRouteLow(), "fuel", 50, 2.0);
-
-		//6. Wikipedia POIs with GeoNames 
-		/*
-		GeoNamesPOIProvider poiProvider = new GeoNamesPOIProvider("mkergall");
-		//BoundingBox bb = map.getBoundingBox();
-		//ArrayList<POI> pois = poiProvider.getPOIInside(bb, 30);
-		//=> not possible in onCreate, as map bounding box is not correct until a draw occurs (osmdroid issue). 
-		ArrayList<POI> pois = poiProvider.getPOICloseTo(startPoint, 30, 20.0);
-		*/
-
-		//8. Quick overview of the Flickr and Picasa POIs */
-		/*
-		PicasaPOIProvider poiProvider = new PicasaPOIProvider(null);
-		BoundingBox bb = BoundingBox.fromGeoPoints(waypoints);
-		ArrayList<POI> pois = poiProvider.getPOIInside(bb, 20, null);
-		*/
-
-		//FolderOverlay poiMarkers = new FolderOverlay(this);
-		//10. Marker Clustering
-		RadiusMarkerClusterer poiMarkers = new RadiusMarkerClusterer(this);
-		//end of 10.
-		//11.1 Customizing the clusters design
-		Bitmap clusterIcon = BonusPackHelper.getBitmapFromVectorDrawable(this, R.drawable.marker_poi_cluster);
-		poiMarkers.setIcon(clusterIcon);
-		poiMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
-		poiMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
-		poiMarkers.mTextAnchorU = 0.70f;
-		poiMarkers.mTextAnchorV = 0.27f;
-		//end of 11.1
-		map.getOverlays().add(poiMarkers);
-		Drawable poiIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_poi_default, null);
-		if (pois != null) {
-			for (POI poi : pois) {
-				Marker poiMarker = new Marker(map);
-				poiMarker.setTitle(poi.mType);
-				poiMarker.setSnippet(poi.mDescription);
-				poiMarker.setPosition(poi.mLocation);
-				poiMarker.setIcon(poiIcon);
-				poiMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-				if (poi.mThumbnail != null) {
-					poiMarker.setImage(new BitmapDrawable(getResources(), poi.mThumbnail));
-				}
-				// 7.
-				poiMarker.setInfoWindow(new CustomInfoWindow(map));
-				poiMarker.setRelatedObject(poi);
-				poiMarkers.add(poiMarker);
-			}
-		}
-
-		//12. Loading KML content
-		//String url = "http://mapsengine.google.com/map/kml?forcekml=1&mid=z6IJfj90QEd4.kUUY9FoHFRdE";
-		mKmlDocument = new KmlDocument();
-		//boolean ok = mKmlDocument.parseKMLUrl(url);
-
-		//Get OpenStreetMap content as KML with Overpass API:
-		OverpassAPIProvider overpassProvider = new OverpassAPIProvider();
-		BoundingBox oBB = new BoundingBox(startPoint.getLatitude() + 0.25, startPoint.getLongitude() + 0.25,
-				startPoint.getLatitude() - 0.25, startPoint.getLongitude() - 0.25);
-		String oUrl = overpassProvider.urlForTagSearchKml("highway=speed_camera", oBB, 500, 30);
-		boolean ok = overpassProvider.addInKmlFolder(mKmlDocument.mKmlRoot, oUrl);
-
-		if (ok) {
-			//13.1 Simple styling
-			Drawable defaultMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_kml_point, null);
-			Bitmap defaultBitmap = ((BitmapDrawable) defaultMarker).getBitmap();
-			Style defaultStyle = new Style(defaultBitmap, 0x901010AA, 3.0f, 0x20AA1010);
-			//13.2 Advanced styling with Styler
-			KmlFeature.Styler styler = new MyKmlStyler(defaultStyle);
-
-			FolderOverlay kmlOverlay = (FolderOverlay) mKmlDocument.mKmlRoot.buildOverlay(map, defaultStyle, styler, mKmlDocument);
-			map.getOverlays().add(kmlOverlay);
-			BoundingBox bb = mKmlDocument.mKmlRoot.getBoundingBox();
-			if (bb != null) {
-				//map.zoomToBoundingBox(bb, false); //=> not working in onCreate - this is a well-known osmdroid issue.
-				//Workaround:
-				setInitialViewOn(bb);
-			}
-		} else
-			Toast.makeText(this, "Error when loading KML", Toast.LENGTH_SHORT).show();
-
-		//14. Grab overlays in KML structure, save KML document locally
-		if (mKmlDocument.mKmlRoot != null) {
-			KmlFolder root = mKmlDocument.mKmlRoot;
-			root.addOverlay(roadOverlay, mKmlDocument);
-			root.addOverlay(roadMarkers, mKmlDocument);
-			mKmlDocument.saveAsKML(mKmlDocument.getDefaultPathForAndroid(this, "my_route.kml"));
-			//15. Loading and saving of GeoJSON content
-			mKmlDocument.saveAsGeoJSON(mKmlDocument.getDefaultPathForAndroid(this,"my_route.json"));
-		}
+//		//3. Showing the Route steps on the map
+//		FolderOverlay roadMarkers = new FolderOverlay();
+//		map.getOverlays().add(roadMarkers);
+//		Drawable nodeIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_node, null);
+//		for (int i = 0; i < road.mNodes.size(); i++) {
+//			RoadNode node = road.mNodes.get(i);
+//			Marker nodeMarker = new Marker(map);
+//			nodeMarker.setPosition(node.mLocation);
+//			nodeMarker.setIcon(nodeIcon);
+//			nodeMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+//
+//			//4. Filling the bubbles
+//			nodeMarker.setTitle("Step " + i);
+//			nodeMarker.setSnippet(node.mInstructions);
+//			nodeMarker.setSubDescription(Road.getLengthDurationText(this, node.mLength, node.mDuration));
+//			Drawable iconContinue = ResourcesCompat.getDrawable(getResources(), R.drawable.ic_continue, null);
+//			nodeMarker.setImage(iconContinue);
+//			//4. end
+//
+//			roadMarkers.add(nodeMarker);
+//		}
+//
+//		//5. OpenStreetMap POIs with Nominatim
+//		NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
+//		ArrayList<POI> pois = poiProvider.getPOICloseTo(startPoint, "cinema", 50, 0.1);
+//		//or : ArrayList<POI> pois = poiProvider.getPOIAlong(road.getRouteLow(), "fuel", 50, 2.0);
+//
+//		//6. Wikipedia POIs with GeoNames
+//		/*
+//		GeoNamesPOIProvider poiProvider = new GeoNamesPOIProvider("mkergall");
+//		//BoundingBox bb = map.getBoundingBox();
+//		//ArrayList<POI> pois = poiProvider.getPOIInside(bb, 30);
+//		//=> not possible in onCreate, as map bounding box is not correct until a draw occurs (osmdroid issue).
+//		ArrayList<POI> pois = poiProvider.getPOICloseTo(startPoint, 30, 20.0);
+//		*/
+//
+//		//8. Quick overview of the Flickr and Picasa POIs */
+//		/*
+//		PicasaPOIProvider poiProvider = new PicasaPOIProvider(null);
+//		BoundingBox bb = BoundingBox.fromGeoPoints(waypoints);
+//		ArrayList<POI> pois = poiProvider.getPOIInside(bb, 20, null);
+//		*/
+//
+//		//FolderOverlay poiMarkers = new FolderOverlay(this);
+//		//10. Marker Clustering
+//		RadiusMarkerClusterer poiMarkers = new RadiusMarkerClusterer(this);
+//		//end of 10.
+//		//11.1 Customizing the clusters design
+//		Bitmap clusterIcon = BonusPackHelper.getBitmapFromVectorDrawable(this, R.drawable.marker_poi_cluster);
+//		poiMarkers.setIcon(clusterIcon);
+//		poiMarkers.getTextPaint().setTextSize(12 * getResources().getDisplayMetrics().density);
+//		poiMarkers.mAnchorV = Marker.ANCHOR_BOTTOM;
+//		poiMarkers.mTextAnchorU = 0.70f;
+//		poiMarkers.mTextAnchorV = 0.27f;
+//		//end of 11.1
+//		map.getOverlays().add(poiMarkers);
+//		Drawable poiIcon = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_poi_default, null);
+//		if (pois != null) {
+//			for (POI poi : pois) {
+//				Marker poiMarker = new Marker(map);
+//				poiMarker.setTitle(poi.mType);
+//				poiMarker.setSnippet(poi.mDescription);
+//				poiMarker.setPosition(poi.mLocation);
+//				poiMarker.setIcon(poiIcon);
+//				poiMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+//				if (poi.mThumbnail != null) {
+//					poiMarker.setImage(new BitmapDrawable(getResources(), poi.mThumbnail));
+//				}
+//				// 7.
+//				poiMarker.setInfoWindow(new CustomInfoWindow(map));
+//				poiMarker.setRelatedObject(poi);
+//				poiMarkers.add(poiMarker);
+//			}
+//		}
+//
+//		//12. Loading KML content
+//		//String url = "http://mapsengine.google.com/map/kml?forcekml=1&mid=z6IJfj90QEd4.kUUY9FoHFRdE";
+//		mKmlDocument = new KmlDocument();
+//		//boolean ok = mKmlDocument.parseKMLUrl(url);
+//
+//		//Get OpenStreetMap content as KML with Overpass API:
+//		OverpassAPIProvider overpassProvider = new OverpassAPIProvider();
+//		BoundingBox oBB = new BoundingBox(startPoint.getLatitude() + 0.25, startPoint.getLongitude() + 0.25,
+//				startPoint.getLatitude() - 0.25, startPoint.getLongitude() - 0.25);
+//		String oUrl = overpassProvider.urlForTagSearchKml("highway=speed_camera", oBB, 500, 30);
+//		boolean ok = overpassProvider.addInKmlFolder(mKmlDocument.mKmlRoot, oUrl);
+//
+//		if (ok) {
+//			//13.1 Simple styling
+//			Drawable defaultMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.marker_kml_point, null);
+//			Bitmap defaultBitmap = ((BitmapDrawable) defaultMarker).getBitmap();
+//			Style defaultStyle = new Style(defaultBitmap, 0x901010AA, 3.0f, 0x20AA1010);
+//			//13.2 Advanced styling with Styler
+//			KmlFeature.Styler styler = new MyKmlStyler(defaultStyle);
+//
+//			FolderOverlay kmlOverlay = (FolderOverlay) mKmlDocument.mKmlRoot.buildOverlay(map, defaultStyle, styler, mKmlDocument);
+//			map.getOverlays().add(kmlOverlay);
+//			BoundingBox bb = mKmlDocument.mKmlRoot.getBoundingBox();
+//			if (bb != null) {
+//				//map.zoomToBoundingBox(bb, false); //=> not working in onCreate - this is a well-known osmdroid issue.
+//				//Workaround:
+//				setInitialViewOn(bb);
+//			}
+//		} else
+//			Toast.makeText(this, "Error when loading KML", Toast.LENGTH_SHORT).show();
+//
+//		//14. Grab overlays in KML structure, save KML document locally
+//		if (mKmlDocument.mKmlRoot != null) {
+//			KmlFolder root = mKmlDocument.mKmlRoot;
+//			root.addOverlay(roadOverlay, mKmlDocument);
+//			root.addOverlay(roadMarkers, mKmlDocument);
+//			mKmlDocument.saveAsKML(mKmlDocument.getDefaultPathForAndroid(this, "my_route.kml"));
+//			//15. Loading and saving of GeoJSON content
+//			mKmlDocument.saveAsGeoJSON(mKmlDocument.getDefaultPathForAndroid(this,"my_route.json"));
+//		}
 
 		//16. Handling Map events
 		MapEventsOverlay mapEventsOverlay = new MapEventsOverlay(this);
@@ -424,7 +424,7 @@ public class MainActivity extends Activity implements MapEventsReceiver, MapView
 		circle.getOutlinePaint().setStrokeWidth(2);
 		map.getOverlays().add(circle);
 		circle.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-		circle.setTitle("Centered on " + p.getLatitude() + "," + p.getLongitude());
+		circle.setTitle("Centered on kkkk" + p.getLatitude() + "," + p.getLongitude());
 
 		//18. Using GroundOverlay
 		/*
